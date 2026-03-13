@@ -9,11 +9,13 @@ export default function ExpenseForm({
 }) {
   const [amount, setAmount] = useState("");
   const [categories, setCategories] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
 
   useEffect(() => {
     if (editingExpense) {
       setAmount(editingExpense.amount);
-      setCategories(editingExpense.category.join(", "));
+      setCategories(editingExpense.category);
+      setPaymentMethod(editingExpense.paymentMethod);
     }
   }, [editingExpense]);
 
@@ -22,7 +24,8 @@ export default function ExpenseForm({
 
     const expense = {
       amount: Number(amount),
-      category: categories.split(",").map((c) => c.trim()),
+      category: categories.trim(),
+      paymentMethod,
     };
 
     if (editingExpense) {
@@ -33,6 +36,7 @@ export default function ExpenseForm({
 
     setAmount("");
     setCategories("");
+    setPaymentMethod("Cash");
   };
 
   return (
@@ -48,13 +52,25 @@ export default function ExpenseForm({
         />
 
         <input
-          className="w-full border rounded focus:outline-none focus:ring"
+          className="w-full border rounded focus:outline-none focus:ring mt-1"
           type="text"
           placeholder="Categories (Comma Separated)"
           value={categories}
           onChange={(e) => setCategories(e.target.value)}
           required
         />
+
+        <select
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          className="w-full border rounded mt-1 mb-2 focus:outline-none focus:ring"
+        >
+          <option value="Cash">Cash</option>
+          <option value="Card">Card</option>
+          <option value="Bank">Bank</option>
+          <option value="Digital Wallet">Digital Wallet</option>
+          <option value="BNPL">BNPL</option>
+        </select>
 
         <div className="flex gap-2 justify-end ">
           {editingExpense && (
@@ -64,6 +80,7 @@ export default function ExpenseForm({
                 handleCancel();
                 setAmount("");
                 setCategories("");
+                setPaymentMethod("Cash");
               }}
             >
               {" "}

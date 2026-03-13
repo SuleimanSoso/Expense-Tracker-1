@@ -3,66 +3,70 @@ import ExpenseDB from "../db/ExpenseDB.js";
 
 const router = express.Router();
 
-router.post("/", async(req, res) => {
+router.post("/", async (req, res) => {
+  try {
+    const { amount, category, date, description, paymentMethod } = req.body;
 
-    try {
+    const expenseData = await ExpenseDB.create({
+      amount,
+      category,
+      description,
+      paymentMethod,
+      date: date || new Date(),
+    });
 
-        const {amount, category, createdAt} = req.body;
-
-        const expenseData = await ExpenseDB.create({
-            amount,
-            category,
-            createdAt
-        });
-
-        res.status(201).json(expenseData);
-
-    } catch (error) {
-        res.status(500).json({error: "Failed to add expense"});
-    }
+    res.status(201).json(expenseData);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add expense" });
+  }
 });
 
 router.get("/", async (req, res) => {
-        try {
-            const expenses = await ExpenseDB.find().sort({createdAt: -1});
-            res.json(expenses);
-        } catch (error) {
-            res.status(500).json({error: "Failed to fetch expenses"})
-        }
+  try {
+    const expenses = await ExpenseDB.find().sort({ date: -1 });
+    res.json(expenses);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch expenses" });
+  }
 });
 
 router.get("/:id", async (req, res) => {
-    try {
-        const expense = await ExpenseDB.findById(req.params.id);
-        if (!expense) return res.status(404).json({error: "Expense not found"})
-        res.json(expense);
-    } catch (error) {
-        res.status(500).json({error: "Failed to fetch expense"});
-    }
+  try {
+    const expense = await ExpenseDB.findById(req.params.id);
+    if (!expense) return res.status(404).json({ error: "Expense not found" });
+    res.json(expense);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch expense" });
+  }
 });
 
 router.put("/:id", async (req, res) => {
-    try {
-        const updatedExpense = await ExpenseDB.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            {new: true}
-        );
-        res.json(updatedExpense);
-    } catch (error) {
-        res.status(500).json({error: "Failed to update expense"});
-    }
+  try {
+    const { amount, category, date, description, paymentMethod } = req.body;
+    const updatedExpense = await ExpenseDB.findByIdAndUpdate(
+      req.params.id,
+      {
+        amount,
+        category,
+        description,
+        paymentMethod,
+        date: date ? new Date(date) : undefined,
+      },
+      { new: true },
+    );
+    res.json(updatedExpense);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update expense" });
+  }
 });
 
 router.delete("/:id", async (req, res) => {
-    
-    try {
-        await ExpenseDB.findByIdAndDelete(req.params.id);
-        res.json({message: "Expense Deleted"});
-    } catch (error) {
-        res.status(500).json({error: "failed to to delete expense"});
-    }
-
+  try {
+    await ExpenseDB.findByIdAndDelete(req.params.id);
+    res.json({ message: "Expense Deleted" });
+  } catch (error) {
+    res.status(500).json({ error: "failed to to delete expense" });
+  }
 });
 
 export default router;
